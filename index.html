@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="description" content="Personal Attendance Tracker for R. Surya Chandra - VR Siddhartha Engineering College">
+    <title>Attendance Tracker - R. Surya Chandra</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1.5rem;
+        }
+
+        .header {
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .badge-purple {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c4b5fd;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .user-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #dbeafe;
+        }
+
+        .college-name {
+            font-size: 0.875rem;
+            color: #bfdbfe;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .date-input {
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            transition: border-color 0.3s;
+        }
+
+        .date-input:hover {
+            border-color: #60a5fa;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgb(59, 130, 246);
+            color: #93c5fd;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+
+        .content-card {
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            color: #bfdbfe;
+            margin-bottom: 1.5rem;
+        }
+
+        .classes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .class-card {
+            padding: 1.25rem;
+            border-left: 4px solid #60a5fa;
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .class-card:hover {
+            transform: translateX(4px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .class-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .class-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: #93c5fd;
+            font-weight: 600;
+        }
+
+        .class-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .status-present {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .status-absent {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .attendance-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-present {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-present.active {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-absent {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-absent.active {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .empty-state-title {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-subtitle {
+            color: #bfdbfe;
+        }
+
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .summary-item {
+            padding: 1rem;
+            transition: background 0.3s;
+        }
+
+        .summary-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .summary-percentage {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .summary-stats {
+            font-size: 0.75rem;
+            color: #bfdbfe;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            border-radius: 9999px;
+            transition: width 0.5s;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #bfdbfe;
+            font-size: 0.875rem;
+            padding: 1rem;
+        }
+
+        .color-blue { color: #60a5fa; }
+        .color-green { color: #4ade80; }
+        .color-red { color: #f87171; }
+        .color-purple { color: #a78bfa; }
+        .color-yellow { color: #facc15; }
+
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .class-card {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .class-header {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                padding: 1rem 0.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .header {
+                padding: 1.5rem 1rem;
+            }
+
+            .content-card {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const storage = {
+            get: (key) => {
+                try {
+                    const value = localStorage.getItem(key);
+                    return value ? { value } : null;
+                } catch (e) {
+                    return null;
+                }
+            },
+            set: (key, value) => {
+                try {
+                    localStorage.setItem(key, value);
+                    return { key, value };
+                } catch (e) {
+                    return null;
+                }
+            }
+        };
+
+        function AttendanceTracker() {
+            const [attendanceRecords, setAttendanceRecords] = useState([]);
+            const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
+            const [loading, setLoading] = useState(true);
+            const [viewMode, setViewMode] = useState('daily');
+
+            const subjects = [
+                { id: 'iot', name: 'IOT' },
+                { id: 'radar', name: 'RADAR' },
+                { id: 'aptitude', name: 'Aptitude' },
+                { id: 'ipr', name: 'IPR' },
+                { id: 'image-video', name: 'IMAGE AND VIDEO' },
+                { id: 'system-verilog', name: 'System Verilog (SEC period)' },
+                { id: 'acs-lab', name: 'ACS Lab' },
+                { id: 'micro-waves', name: 'MICRO WAVES' },
+                { id: 'microwave', name: 'MICROWAVE' },
+                { id: 'microwave-lab', name: 'MW&OP LAB' },
+                { id: 'vlsi-lab', name: 'VLSI Lab' },
+                { id: 'gate-project', name: 'GATE / Value Add/PROJECT' },
+                { id: 'linear-control', name: 'LINEAR CONTROL SYSTEMS' },
+                { id: 'vlsi-design', name: 'VLSI DESIGN' },
+                { id: 'microwave-optical', name: 'MICORWAVE AND OPTICAL' },
+                { id: 'club', name: 'CLUB' },
+                { id: 'counselling', name: 'COUNCELLING' },
+            ];
+
+            const schedule = {
+                monday: [
+                    { time: '8:40 - 9:30', subject: 'iot' },
+                    { time: '9:30 - 10:20', subject: 'radar' },
+                    { time: '10:20 - 11:10', subject: 'aptitude' },
+                    { time: '11:20 - 12:10', subject: 'ipr' },
+                    { time: '12:10 - 1:00', subject: 'image-video' },
+                    { time: '2:00 - 2:50', subject: 'system-verilog' },
+                    { time: '2:50 - 3:40', subject: 'system-verilog' },
+                    { time: '3:40 - 4:30', subject: 'system-verilog' },
+                ],
+                tuesday: [
+                    { time: '8:40 - 9:30', subject: 'iot' },
+                    { time: '9:30 - 10:20', subject: 'linear-control' },
+                    { time: '10:20 - 11:10', subject: 'linear-control' },
+                    { time: '11:20 - 12:10', subject: 'micro-waves' },
+                    { time: '12:10 - 1:00', subject: 'image-video' },
+                    { time: '2:00 - 2:50', subject: 'vlsi-design' },
+                    { time: '2:50 - 3:40', subject: 'aptitude' },
+                    { time: '3:40 - 4:30', subject: 'counselling' },
+                ],
+                wednesday: [
+                    { time: '8:40 - 9:30', subject: 'iot' },
+                    { time: '9:30 - 10:20', subject: 'microwave-optical' },
+                    { time: '10:20 - 11:10', subject: 'microwave-optical' },
+                    { time: '11:20 - 12:10', subject: 'linear-control' },
+                    { time: '12:10 - 1:00', subject: 'radar' },
+                    { time: '2:00 - 2:50', subject: 'vlsi-design' },
+                    { time: '2:50 - 3:40', subject: 'vlsi-design' },
+                    { time: '3:40 - 4:30', subject: 'ipr' },
+                ],
+                thursday: [
+                    { time: '9:30 - 10:20', subject: 'acs-lab' },
+                    { time: '10:20 - 11:10', subject: 'acs-lab' },
+                    { time: '11:20 - 12:10', subject: 'microwave' },
+                    { time: '12:10 - 1:00', subject: 'radar' },
+                    { time: '2:00 - 2:50', subject: 'linear-control' },
+                    { time: '2:50 - 3:40', subject: 'gate-project' },
+                    { time: '3:40 - 4:30', subject: 'gate-project' },
+                ],
+                friday: [
+                    { time: '9:30 - 10:20', subject: 'image-video' },
+                    { time: '10:20 - 11:10', subject: 'vlsi-lab' },
+                    { time: '11:20 - 12:10', subject: 'vlsi-lab' },
+                    { time: '12:10 - 1:00', subject: 'vlsi-lab' },
+                    { time: '2:00 - 2:50', subject: 'microwave-lab' },
+                    { time: '2:50 - 3:40', subject: 'microwave-lab' },
+                    { time: '3:40 - 4:30', subject: 'microwave-lab' },
+                ],
+                saturday: [
+                    { time: '9:30 - 10:20', subject: 'image-video' },
+                    { time: '10:20 - 11:10', subject: 'radar' },
+                    { time: '11:20 - 12:10', subject: 'vlsi-design' },
+                    { time: '12:10 - 1:00', subject: 'club' },
+                ],
+            };
+
+            useEffect(() => {
+                loadData();
+            }, []);
+
+            const initializeExistingData = () => {
+                const initialRecords = [];
+                let recordId = 1000;
+                
+                // IOT: 4/5 (80%)
+                for (let i = 0; i < 4; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'iot', date: `2024-12-${21 + i}`, time: '8:40 - 9:30', status: 'present', timestamp: new Date().toISOString() });
+                }
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'iot', date: '2024-12-25', time: '8:40 - 9:30', status: 'absent', timestamp: new Date().toISOString() });
+                
+                // RADAR: 3/4 (75%)
+                for (let i = 0; i < 3; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'radar', date: `2024-12-${21 + i}`, time: '9:30 - 10:20', status: 'present', timestamp: new Date().toISOString() });
+                }
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'radar', date: '2024-12-24', time: '9:30 - 10:20', status: 'absent', timestamp: new Date().toISOString() });
+                
+                // Aptitude: 2/3 (66.7%)
+                for (let i = 0; i < 2; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'aptitude', date: `2024-12-${21 + i}`, time: '10:20 - 11:10', status: 'present', timestamp: new Date().toISOString() });
+                }
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'aptitude', date: '2024-12-23', time: '10:20 - 11:10', status: 'absent', timestamp: new Date().toISOString() });
+                
+                // IPR: 2/2 (100%)
+                for (let i = 0; i < 2; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'ipr', date: `2024-12-${21 + i}`, time: '11:20 - 12:10', status: 'present', timestamp: new Date().toISOString() });
+                }
+                
+                for (let i = 0; i < 5; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'image-video', date: `2024-12-${21 + i}`, time: '12:10 - 1:00', status: 'present', timestamp: new Date().toISOString() });
+                }
+                
+                for (let i = 0; i < 3; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'system-verilog', date: `2024-12-${21 + i}`, time: '2:00 - 2:50', status: 'present', timestamp: new Date().toISOString() });
+                }
+                
+                for (let i = 0; i < 3; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'microwave-lab', date: `2024-12-${21 + i}`, time: '2:00 - 2:50', status: 'present', timestamp: new Date().toISOString() });
+                }
+                
+                for (let i = 0; i < 3; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'vlsi-lab', date: `2024-12-${21 + i}`, time: '2:00 - 2:50', status: 'present', timestamp: new Date().toISOString() });
+                }
+                
+                // LINEAR CONTROL: 4/5 (80%)
+                for (let i = 0; i < 4; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'linear-control', date: `2024-12-${21 + i}`, time: '9:30 - 10:20', status: 'present', timestamp: new Date().toISOString() });
+                }
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'linear-control', date: '2024-12-25', time: '9:30 - 10:20', status: 'absent', timestamp: new Date().toISOString() });
+                
+                // VLSI DESIGN: 4/5 (80%)
+                for (let i = 0; i < 4; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'vlsi-design', date: `2024-12-${21 + i}`, time: '11:20 - 12:10', status: 'present', timestamp: new Date().toISOString() });
+                }
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'vlsi-design', date: '2024-12-25', time: '11:20 - 12:10', status: 'absent', timestamp: new Date().toISOString() });
+                
+                // MICROWAVE AND OPTICAL: 3/5 (60%)
+                for (let i = 0; i < 3; i++) {
+                    initialRecords.push({ id: `init-${recordId++}`, subjectId: 'microwave-optical', date: `2024-12-${21 + i}`, time: '11:20 - 12:10', status: 'present', timestamp: new Date().toISOString() });
+                }
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'microwave-optical', date: '2024-12-24', time: '11:20 - 12:10', status: 'absent', timestamp: new Date().toISOString() });
+                initialRecords.push({ id: `init-${recordId++}`, subjectId: 'microwave-optical', date: '2024-12-25', time: '11:20 - 12:10', status: 'absent', timestamp: new Date().toISOString() });
+                
+                return initialRecords;
+            };
+
+            const loadData = () => {
+                const recordsResult = storage.get('personal-attendance-records-v2');
+                
+                if (recordsResult?.value) {
+                    setAttendanceRecords(JSON.parse(recordsResult.value));
+                } else {
+                    const initial = initializeExistingData();
+                    setAttendanceRecords(initial);
+                    saveData(initial);
+                }
+                setLoading(false);
+            };
+
+            const saveData = (newRecords) => {
+                storage.set('personal-attendance-records-v2', JSON.stringify(newRecords));
+            };
+
+            const getDayOfWeek = (dateString) => {
+                const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const date = new Date(dateString + 'T00:00:00');
+                return days[date.getDay()];
+            };
+
+            const getTodayClasses = () => {
+                const day = getDayOfWeek(currentDate);
+                return schedule[day] || [];
+            };
+
+            const markAttendance = (subjectId, time, status) => {
+                const existingRecordIndex = attendanceRecords.findIndex(
+                    r => r.subjectId === subjectId && r.date === currentDate && r.time === time
+                );
+
+                let updatedRecords;
+                if (existingRecordIndex >= 0) {
+                    updatedRecords = [...attendanceRecords];
+                    updatedRecords[existingRecordIndex] = {
+                        ...updatedRecords[existingRecordIndex],
+                        status
+                    };
+                } else {
+                    updatedRecords = [
+                        ...attendanceRecords,
+                        {
+                            id: Date.now().toString(),
+                            subjectId,
+                            date: currentDate,
+                            time,
+                            status,
+                            timestamp: new Date().toISOString()
+                        }
+                    ];
+                }
+
+                setAttendanceRecords(updatedRecords);
+                saveData(updatedRecords);
+            };
+
+            const getClassStatus = (subjectId, time) => {
+                const record = attendanceRecords.find(
+                    r => r.subjectId === subjectId && r.date === currentDate && r.time === time
+                );
+                return record?.status || null;
+            };
+
+            const getSubjectStats = (subjectId) => {
+                const subjectRecords = attendanceRecords.filter(r => r.subjectId === subjectId);
+                const total = subjectRecords.length;
+                const present = subjectRecords.filter(r => r.status === 'present').length;
+                const absent = subjectRecords.filter(r => r.status === 'absent').length;
+                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+
+                return { total, present, absent, percentage };
+            };
+
+            const getTodayStats = () => {
+                const todayClasses = getTodayClasses();
+                const todayRecords = attendanceRecords.filter(r => r.date === currentDate);
+                const present = todayRecords.filter(r => r.status === 'present').length;
+                const absent = todayRecords.filter(r => r.status === 'absent').length;
+                const total = todayClasses.length;
+                const marked = todayRecords.length;
+
+                return { present, absent, total, marked };
+            };
+
+            const getOverallStats = () => {
+                const total = attendanceRecords.length;
+                const present = attendanceRecords.filter(r => r.status === 'present').length;
+                const absent = attendanceRecords.filter(r => r.status === 'absent').length;
+                const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+
+                return { total, present, absent, percentage };
+            };
+
+            const getSubjectName = (subjectId) => {
+                const subject = subjects.find(s => s.id === subjectId);
+                return subject?.name || subjectId;
+            };
+
+            const todayStats = getTodayStats();
+            const overallStats = getOverallStats();
+            const todayClasses = getTodayClasses();
+            const dayName = getDayOfWeek(currentDate);
+
+            if (loading) {
+                return (
+                    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div>Loading...</div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="container">
+                    {/* Header */}
+                    <div className="glass-strong header">
+                        <div>
+                            <div className="badges">
+                                <span className="badge badge-blue">SEM 6</span>
+                                <span className="badge badge-purple">ECE</span>
+                            </div>
+                            <h1>📅 Attendance Tracker</h1>
+                            <div className="user-info">
+                                <p className="user-name">R. Surya Chandra</p>
+                                <p className="college-name">Velagapudi Ramakrishna Siddhartha Engineering College</p>
+                            </div>
+                        </div>
+                        
+                        <div className="header-controls">
+                            <input
+                                type="date"
+                                value={currentDate}
+                                onChange={(e) => setCurrentDate(e.target.value)}
+                                className="date-input"
+                            />
+                            <div className="tab-buttons">
+                                <button
+                                    onClick={() => setViewMode('daily')}
+                                    className={`tab-btn ${viewMode === 'daily' ? 'active' : ''}`}
+                                >
+                                    📅 Daily
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('summary')}
+                                    className={`tab-btn ${viewMode === 'summary' ? 'active' : ''}`}
+                                >
+                                    📊 Summary
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="stats-grid">
+                        <div className="glass stat-card">
+                            <div className="stat-label color-blue">Total Classes</div>
+                            <div className="stat-value">{overallStats.total}</div>
+                        </div>
+                        <div className="glass stat-card">
+                            <div className="stat-label color-green">Attended</div>
+                            <div className="stat-value color-green">{overallStats.present}</div>
+                        </div>
+                        <div className="glass stat-card">
+                            <div className="stat-label color-red">Missed</div>
+                            <div className="stat-value color-red">{overallStats.absent}</div>
+                        </div>
+                        <div className="glass stat-card">
+                            <div className="stat-label color-purple">Overall %</div>
+                            <div className="stat-value color-purple">{overallStats.percentage}%</div>
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    {viewMode === 'daily' ? (
+                        <div className="glass-strong content-card">
+                            <h2 className="section-title">
+                                {dayName.charAt(0).toUpperCase() + dayName.slice(1)}'s Classes
+                            </h2>
+                            <p className="section-subtitle">
+                                {todayStats.marked} of {todayStats.total} marked
+                            </p>
+
+                            {todayClasses.length === 0 ? (
+                                <div className="empty-state">
+                                    <p className="empty-state-title">No classes scheduled</p>
+                                    <p className="empty-state-subtitle">Enjoy your day off!</p>
+                                </div>
+                            ) : (
+                                <div className="classes-list">
+                                    {todayClasses.map((classItem, index) => {
+                                        const status = getClassStatus(classItem.subject, classItem.time);
+                                        const borderColor = status === 'present' ? '#10b981' : status === 'absent' ? '#ef4444' : '#60a5fa';
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="glass class-card"
+                                                style={{ 
+                                                    borderLeftColor: borderColor,
+                                                    animationDelay: `${index * 100}ms`
+                                                }}
+                                            >
+                                                <div className="class-header">
+                                                    <span className="class-time">{classItem.time}</span>
+                                                    <h3 className="class-name">{getSubjectName(classItem.subject)}</h3>
+                                                    {status && (
+                                                        <span className={`status-badge ${status === 'present' ? 'status-present' : 'status-absent'}`}>
+                                                            {status.toUpperCase()}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="attendance-buttons">
+                                                    <button
+                                                        onClick={() => markAttendance(classItem.subject, classItem.time, 'present')}
+                                                        className={`btn btn-present ${status === 'present' ? 'active' : ''}`}
+                                                    >
+                                                        ✓ Present
+                                                    </button>
+                                                    <button
+                                                        onClick={() => markAttendance(classItem.subject, classItem.time, 'absent')}
+                                                        className={`btn btn-absent ${status === 'absent' ? 'active' : ''}`}
+                                                    >
+                                                        ✗ Absent
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="glass-strong content-card">
+                            <h2 className="section-title">Subject Summary</h2>
+                            <div className="summary-list">
+                                {subjects.filter(s => getSubjectStats(s.id).total > 0).map((subject) => {
+                                    const stats = getSubjectStats(subject.id);
+                                    const percentageColor = parseFloat(stats.percentage) >= 75 ? 'color-green' :
+                                        parseFloat(stats.percentage) >= 65 ? 'color-yellow' : 'color-red';
+
+                                    return (
+                                        <div key={subject.id} className="glass summary-item">
+                                            <div className="summary-header">
+                                                <h3 className="summary-name">{subject.name}</h3>
+                                                <span className={`summary-percentage ${percentageColor}`}>
+                                                    {stats.percentage}%
+                                                </span>
+                                            </div>
+                                            <div className="summary-stats">
+                                                {stats.present}/{stats.total} attended
+                                            </div>
+                                            <div className="progress-bar">
+                                                <div className="progress-fill" style={{ width: `${stats.percentage}%` }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="glass footer">
+                        <p>✨ Your attendance is automatically saved</p>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AttendanceTracker />);
+    </script>
+</body>
+</html>
