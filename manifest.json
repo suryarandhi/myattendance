@@ -2,7 +2,7 @@
   "name": "Attendance Tracker - R. Surya Chandra",
   "short_name": "Attendance",
   "description": "Personal Attendance Tracker for VR Siddhartha Engineering College",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#1e3a8a",
